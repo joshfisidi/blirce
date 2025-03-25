@@ -1,11 +1,8 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Song } from "@/types";
-import { cookies } from "next/headers";
+import { createServerSupabaseClient } from "@/lib/supabaseServer";
 
 const getSongsByUserId = async (): Promise<Song[]> => {
-    const supabase = createServerComponentClient({
-        cookies: cookies
-    })
+    const supabase = createServerSupabaseClient();
 
     const {
         data: sessionData,
@@ -13,21 +10,34 @@ const getSongsByUserId = async (): Promise<Song[]> => {
     } = await supabase.auth.getSession();
 
     if (sessionError) {
-        console.log(sessionError.message)
+        console.log(sessionError.message);
+        return [];
+    }
+
+    if (!sessionData.session?.user.id) {
         return [];
     }
 
     const { data, error } = await supabase
         .from('songs')
         .select('*')
-        .eq('user_id', sessionData.session?.user.id)
-        .order('created_at', {ascending: false})
+        .eq('user_id', sessionData.session.user.id)
+        .order('created_at', { ascending: false });
 
     if (error) {
-        console.log(error.message)
+        console.log(error.message);
+        return [];
     }
 
-    return (data as any) || [];
+    // Convert to Song type
+    return data.map(item => ({
+        id: item.id.toString(),
+        user_id: item.user_id || "",
+        author: item.author || "",
+        title: item.title || "",
+        song_path: item.song_path || "",
+        image_path: item.image_path || ""
+    })) || [];
 }
 
 export default getSongsByUserId;

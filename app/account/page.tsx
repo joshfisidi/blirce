@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Header from "@/components/Header";
-import ProfileContent from "./components/ProfileContent";
+import ProfileContent from "@/components/ProfileContent";
 
 export const metadata: Metadata = {
   title: "Blirce | Profile",
