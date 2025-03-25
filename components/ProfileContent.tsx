@@ -3,7 +3,6 @@
 import { useUser } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { toast } from "react-hot-toast";
 import { Song } from "@/types";
 import SongItem from "@/components/SongItem";
@@ -12,11 +11,12 @@ import Button from "@/components/Button";
 import { FaUser } from "react-icons/fa";
 import { MdModeEdit, MdFileUpload } from "react-icons/md";
 import useUploadModal from "@/hooks/useUploadModal";
+import { useSupabase } from "@/providers/SupabaseProvider";
 
 const ProfileContent = () => {
   const router = useRouter();
   const { user, userDetails, isLoading, subscription } = useUser();
-  const supabaseClient = useSupabaseClient();
+  const { supabase } = useSupabase();
   const [userSongs, setUserSongs] = useState<Song[]>([]);
   const [isLoadingSongs, setIsLoadingSongs] = useState(true);
   const uploadModal = useUploadModal();
@@ -34,7 +34,7 @@ const ProfileContent = () => {
       try {
         setIsLoadingSongs(true);
         
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
           .from("songs")
           .select("*")
           .eq("user_id", user.id)
@@ -45,7 +45,17 @@ const ProfileContent = () => {
           return;
         }
         
-        setUserSongs(data || []);
+        // Convert the data to the expected Song type format
+        const formattedSongs = data?.map(song => ({
+          id: song.id.toString(),
+          user_id: song.user_id || "",
+          author: song.author || "",
+          title: song.title || "",
+          song_path: song.song_path || "",
+          image_path: song.image_path || ""
+        })) || [];
+        
+        setUserSongs(formattedSongs);
       } catch (error) {
         toast.error("Something went wrong");
       } finally {
@@ -54,7 +64,7 @@ const ProfileContent = () => {
     };
 
     fetchUserSongs();
-  }, [supabaseClient, user, router]);
+  }, [supabase, user, router]);
 
   const handleUpload = () => {
     uploadModal.onOpen();

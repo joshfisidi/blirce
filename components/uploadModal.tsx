@@ -9,15 +9,14 @@ import Input from "./Input"
 import Button from "./Button"
 import { useUser } from "../hooks/useUser";
 import uniqid from "uniqid";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { ImageError } from "next/dist/server/image-optimizer";
+import { useSupabase } from "@/providers/SupabaseProvider";
 
 const UploadModal = () => {
 
     const [isLoading, setIsLoading] = useState(false); 
     const uploadModal = useUploadModal();
     const { user } = useUser()
-    const supabaseClient = useSupabaseClient();
+    const { supabase } = useSupabase();
     const router = useRouter();
 
     const { register, handleSubmit, reset } = useForm<FieldValues>({
@@ -54,7 +53,7 @@ const UploadModal = () => {
             const {
                 data: songData,
                 error: songError
-            } = await supabaseClient
+            } = await supabase
             .storage
             .from('songs')
             .upload(`song-${values.title}-${uniqueId}`, songFile, {
@@ -71,7 +70,7 @@ const UploadModal = () => {
              const {
                 data: imageData,
                 error: imageError
-            } = await supabaseClient
+            } = await supabase
             .storage
             .from('images')
             .upload(`image-${values.title}-${uniqueId}`, imageFile, {
@@ -86,7 +85,7 @@ const UploadModal = () => {
 
             const {
                 error: supabaseError
-            } = await supabaseClient
+            } = await supabase
             .from('songs')
             .insert({
                 user_id : user.id,
@@ -137,5 +136,5 @@ const UploadModal = () => {
         </Modal>
     );
 }
- 1
+
 export default UploadModal;

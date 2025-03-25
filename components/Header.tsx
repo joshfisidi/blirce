@@ -6,12 +6,12 @@ import { RxCaretLeft, RxCaretRight } from "react-icons/rx";
 import { HiHome } from "react-icons/hi"; 
 import { BiSearch } from "react-icons/bi";
 import { FaUserAlt } from "react-icons/fa";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { toast } from "react-hot-toast";
 
 import Button from "./Button";
 import useAuthModal from "@/hooks/useAuthModal";
 import { useUser } from "@/hooks/useUser";
+import { useSupabase } from "@/providers/SupabaseProvider";
 
 interface HeaderProps {
     children: React.ReactNode;
@@ -22,11 +22,11 @@ const Header: React.FC<HeaderProps> = ({children, className}) => {
     const authModal = useAuthModal();
     const router = useRouter();
 
-    const supabaseClient = useSupabaseClient();
+    const { supabase } = useSupabase();
     const { user } = useUser();
     
     const handleLogout = async () => {
-        const { error } = await supabaseClient.auth.signOut();
+        const { error } = await supabase.auth.signOut();
         //to reset any playing song
         router.refresh(); 
 

@@ -1,13 +1,13 @@
-import { useState, useEffect, useMemo, use } from 'react';
-import { useSessionContext } from "@supabase/auth-helpers-react"
+import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
+import { useSupabase } from '@/providers/SupabaseProvider';
 
 import { Song } from '../types';
 
 const useGetSongsById = (id?: string) => {
     const [isLoading, setIsLoading] = useState(false);
     const [song, setSong] = useState<Song | undefined>(undefined);
-    const { supabaseClient } = useSessionContext();
+    const { supabase } = useSupabase();
 
     useEffect(() => {
         if (!id) return;
@@ -15,10 +15,11 @@ const useGetSongsById = (id?: string) => {
         setIsLoading(true);
 
         const fetchSong = async () => {
-            const { data, error } = await supabaseClient
+            const idNum = parseInt(id);
+            const { data, error } = await supabase
                 .from('songs')
                 .select('*')
-                .eq('id', id)
+                .eq('id', idNum)
                 .single();
 
             if (error) {
@@ -26,17 +27,27 @@ const useGetSongsById = (id?: string) => {
                 return toast.error(error.message);
             }
 
-            setSong(data as Song);
+            // Convert to Song type
+            const songData: Song = {
+                id: data.id.toString(),
+                user_id: data.user_id || "",
+                author: data.author || "",
+                title: data.title || "",
+                song_path: data.song_path || "",
+                image_path: data.image_path || ""
+            };
+
+            setSong(songData);
             setIsLoading(false);
         }
 
         fetchSong();
-    }, [id, supabaseClient]);
+    }, [id, supabase]);
 
     return useMemo(() => ({
         isLoading,
         song
-    }), [isLoading, song])
+    }), [isLoading, song]);
 }
 
 export default useGetSongsById;
