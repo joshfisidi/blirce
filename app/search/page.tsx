@@ -2,16 +2,20 @@ import getSongsByTitle from "@/actions/getSongsByTitle";
 import Header from "@/components/Header";
 import SearchInput from "@/components/SearchInput";
 import SearchContent from "./components/SearchContent";
+import { Metadata } from "next";
 
-interface SearchProps {
-    searchParams: {
-        title: string;
-    }
-}
+export const metadata: Metadata = {
+  title: "Blirce | Search",
+  description: "Search for music in our collection",
+};
 
 export const revalidate = 0;
 
-const Search = async ({searchParams}: SearchProps) => {
+export default async function Search({
+  searchParams,
+}: {
+  searchParams: { title: string };
+}) {
     const songs = await getSongsByTitle(searchParams.title);
 
     return (
@@ -26,7 +30,5 @@ const Search = async ({searchParams}: SearchProps) => {
             </Header>
             <SearchContent songs={songs} />
         </div>
-    )
+    );
 }
-
-export default Search;
